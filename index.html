@@ -5,63 +5,54 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ACDelco서비스센터 예약대장</title>
     <style>
-        /* 기본 화면 설정 */
         body { font-family: 'Malgun Gothic', sans-serif; background-color: #f0f2f5; padding: 10px; margin: 0; }
         .container { max-width: 1050px; margin: 0 auto; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-        
         .main-header { text-align: center; color: #000; margin: 5px 0; border-bottom: 3px solid #000; padding-bottom: 5px; }
-        .main-header h1 { font-size: 26px; margin: 0; }
+        .main-header h1 { font-size: 28px; margin: 0; }
 
-        .setup-bar { background: #1e293b; color: white; padding: 8px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
-        .setup-bar input { padding: 4px; border-radius: 4px; border: none; width: 100px; text-align: center; font-weight: bold; }
+        /* 상태 표시바 */
+        .status-bar { background: #1e293b; color: white; padding: 8px 15px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; font-size: 14px; }
+        #sync-status { font-weight: bold; }
 
-        .date-navigation { display: flex; justify-content: center; align-items: center; gap: 10px; margin-bottom: 10px; background: #eef2ff; padding: 8px; border-radius: 8px; }
-        .date-btn { background: #4f46e5; color: white; border: none; padding: 6px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; }
-        #target-date { font-size: 18px; font-weight: bold; padding: 5px; border: 1px solid #ddd; border-radius: 4px; }
+        .date-navigation { display: flex; justify-content: center; align-items: center; gap: 10px; margin-bottom: 10px; background: #eef2ff; padding: 10px; border-radius: 8px; }
+        .date-btn { background: #4f46e5; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        #target-date { font-size: 20px; font-weight: bold; padding: 5px; border: 1px solid #ddd; border-radius: 4px; }
 
-        .grid-header { display: grid; grid-template-columns: 75px 1fr 1fr 1fr; gap: 5px; font-weight: bold; text-align: center; border-bottom: 2px solid #333; padding: 10px 0; background: #eee; font-size: 16px; }
+        .grid-header { display: grid; grid-template-columns: 80px 1fr 1fr 1fr; gap: 6px; font-weight: bold; text-align: center; border-bottom: 2px solid #333; padding: 12px 0; background: #eee; font-size: 18px; }
+        .time-row { display: grid; grid-template-columns: 80px 1fr 1fr 1fr; gap: 6px; padding: 4px 0; border-bottom: 1px solid #ddd; height: 110px; }
+        .time-label { display: flex; align-items: center; justify-content: center; font-weight: 900; background: #f8f9fa; border-radius: 4px; font-size: 18px; }
         
-        /* 화면에서의 높이 설정 */
-        .time-row { display: grid; grid-template-columns: 75px 1fr 1fr 1fr; gap: 5px; padding: 3px 0; border-bottom: 1px solid #ddd; height: 100px; }
-        .time-label { display: flex; align-items: center; justify-content: center; font-weight: 900; background: #f8f9fa; border-radius: 4px; font-size: 16px; }
+        .lift-slot { background: #fff; border: 1px solid #ccc; border-radius: 6px; padding: 8px; cursor: pointer; overflow: hidden; display: flex; flex-direction: column; position: relative; justify-content: center; }
         
-        .lift-slot { background: #fff; border: 1px solid #ccc; border-radius: 4px; padding: 6px 8px; cursor: pointer; overflow: hidden; display: flex; flex-direction: column; position: relative; justify-content: center; }
-        
-        /* 상태별 색상 채우기 */
+        /* 예약 상태 색상 */
         .lift-slot.booked { background-color: #0052cc !important; color: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
         .lift-slot.extended { background-color: #e67e22 !important; color: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
         .lift-slot.completed { background-color: #7f8c8d !important; color: #e0e0e0 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
         
-        .lift-slot.lunch { background: #ffe3e3 !important; grid-column: span 3; display: flex; align-items: center; justify-content: center; color: #e03131; font-weight: bold; height: 40px; font-size: 18px; }
+        .lift-slot.lunch { background: #ffe3e3 !important; grid-column: span 3; display: flex; align-items: center; justify-content: center; color: #e03131; font-weight: bold; height: 50px; font-size: 20px; }
         
-        /* 정보 표시 (4단) */
-        .info-carNo { font-weight: 900; font-size: 17px; margin-bottom: 1px; line-height: 1.1; } 
-        .info-carModel { font-weight: bold; font-size: 14px; margin-bottom: 2px; opacity: 0.95; }
-        .info-work { font-size: 12px; margin-bottom: 2px; color: rgba(255,255,255,0.9); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } 
-        .info-worker { font-size: 13px; font-weight: 900; color: #ffeb3b; }
+        /* 정보 4단 표시 */
+        .info-carNo { font-weight: 900; font-size: 19px; margin-bottom: 2px; } 
+        .info-carModel { font-weight: bold; font-size: 15px; margin-bottom: 3px; opacity: 0.9; }
+        .info-work { font-size: 13px; margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } 
+        .info-worker { font-size: 14px; font-weight: 900; color: #ffeb3b; } /* 작업자 노란색 */
 
-        .lift-slot.completed .info-carNo { text-decoration: line-through; opacity: 0.7; }
+        .lift-slot.completed .info-carNo { text-decoration: line-through; opacity: 0.6; }
 
+        /* 입력창 모달 */
         #modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); justify-content:center; align-items:center; z-index:100; }
-        .modal-content { background:white; padding:20px; border-radius:12px; width:340px; }
-        input, select { width:100%; padding:10px; margin-top: 5px; box-sizing:border-box; border: 1px solid #ddd; border-radius: 6px; }
+        .modal-content { background:white; padding:25px; border-radius:15px; width:350px; color: #333; }
+        .modal-content label { display: block; font-size: 13px; font-weight: bold; margin-top: 10px; }
+        input, select { width:100%; padding:12px; margin-top: 5px; box-sizing:border-box; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; }
+        .btn-group { display: flex; gap: 8px; margin-top: 20px; }
+        .btn-group button { flex: 1; padding: 15px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 16px; }
 
-        /* ✅ 인쇄 시 A4 한 장에 맞추는 핵심 설정 */
         @media print {
-            @page { size: A4 portrait; margin: 8mm 5mm; } /* 여백 최소화 */
-            body { background: white; padding: 0; }
+            @page { size: A4 portrait; margin: 8mm 5mm; }
+            .no-print, #modal { display: none !important; }
             .container { width: 100%; max-width: 100%; box-shadow: none; border: none; padding: 0; }
-            .no-print, .setup-bar, .date-navigation, #modal { display: none !important; }
-            .main-header h1 { font-size: 22px; margin-bottom: 10px; }
-            .grid-header { padding: 5px 0; font-size: 14px; background: #ddd !important; border: 1px solid #000; }
-            /* 한 장에 맞추기 위해 높이를 인쇄 시에만 88px로 고정 */
-            .time-row { height: 88px; border: 1px solid #000; margin-top: -1px; } 
-            .time-label { background: #eee !important; border-right: 1px solid #000; font-size: 14px; }
-            .lift-slot { border-radius: 0; border-right: 1px solid #000 !important; }
-            .info-carNo { font-size: 16px; }
-            .info-carModel { font-size: 13px; }
-            .info-work { font-size: 11px; color: #fff !important; }
-            .info-worker { color: #000 !important; background: #ffff00; padding: 0 2px; font-size: 12px; }
+            .time-row { height: 100px; border: 1px solid #000; margin-top: -1px; }
+            .info-worker { color: #000 !important; background: #ffff00; padding: 0 2px; }
             * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
         }
     </style>
@@ -73,16 +64,16 @@
         <h1>ACDelco서비스센터 예약대장</h1>
     </div>
 
-    <div class="setup-bar no-print">
-        <div>📡 <b>실시간 공유 중</b> <span id="sync-status"></span></div>
-        <div>매장 코드: <input type="text" id="shop-id" onchange="loadData()"></div>
+    <div class="status-bar no-print">
+        <div>📡 <b>실시간 공유 모드 (매장 자동연결)</b></div>
+        <div id="sync-status">연결 확인 중...</div>
     </div>
 
     <div class="date-navigation no-print">
         <button class="date-btn" onclick="changeDate(-1)">◀ 어제</button>
         <input type="date" id="target-date" onchange="loadData()">
         <button class="date-btn" onclick="changeDate(1)">내일 ▶</button>
-        <button onclick="window.print()" style="margin-left:10px; padding:8px 15px; cursor:pointer; background:#28a745; color:white; border:none; border-radius:4px; font-weight:bold;">🖨️ A4 한 장 인쇄</button>
+        <button onclick="window.print()" style="margin-left:15px; padding:8px 15px; cursor:pointer; background:#28a745; color:white; border:none; border-radius:4px; font-weight:bold;">🖨️ A4 한 장 인쇄</button>
     </div>
     
     <div class="grid-header">
@@ -93,19 +84,19 @@
 
 <div id="modal">
     <div class="modal-content">
-        <h3 style="margin:0 0 10px 0; text-align:center;">정비 예약 등록</h3>
-        <label style="font-size:12px;">차량번호</label><input type="text" id="carNo">
-        <label style="font-size:12px;">차종</label><input type="text" id="carModel">
-        <label style="font-size:12px;">수리사항</label><input type="text" id="work">
-        <label style="font-size:12px;">🛠️ 작업자</label><input type="text" id="worker">
-        <label style="font-size:12px;">📞 전화번호</label><input type="text" id="phone">
+        <h2 style="margin:0 0 15px 0; text-align:center; color:#4f46e5;">정비 예약 등록</h2>
+        <label>차량번호</label><input type="text" id="carNo" placeholder="예: 12가 3456">
+        <label>차종</label><input type="text" id="carModel" placeholder="예: 알페온">
+        <label>수리사항</label><input type="text" id="work" placeholder="예: 엔진오일 교환">
+        <label>🛠️ 작업자</label><input type="text" id="worker" placeholder="예: 홍길동">
+        <label>📞 전화번호</label><input type="text" id="phone">
         <div style="display:flex; gap:10px;">
-            <div style="flex:1;"><label style="font-size:12px;">시간</label><select id="duration"><option value="1">1시간</option><option value="2">2시간</option><option value="3">3시간</option><option value="4">4시간</option></select></div>
-            <div style="flex:1; display:flex; align-items:flex-end;"><label style="cursor:pointer; display:flex; align-items:center; gap:5px; margin-bottom:12px; font-weight:bold;"><input type="checkbox" id="isDone"> 완료</label></div>
+            <div style="flex:1;"><label>시간</label><select id="duration"><option value="1">1시간</option><option value="2">2시간</option><option value="3">3시간</option><option value="4">4시간</option></select></div>
+            <div style="flex:1; display:flex; align-items:flex-end;"><label style="cursor:pointer; display:flex; align-items:center; gap:5px; margin-bottom:15px; font-weight:bold;"><input type="checkbox" id="isDone"> 정비완료</label></div>
         </div>
         <div class="btn-group">
-            <button style="background:#4f46e5; color:white;" onclick="save()">저장</button>
-            <button style="background:#dc3545; color:white;" onclick="del()">삭제</button>
+            <button style="background:#4f46e5; color:white;" onclick="save()">저장하기</button>
+            <button style="background:#dc3545; color:white;" onclick="del()">삭제하기</button>
             <button style="background:#6c757d; color:white;" onclick="closeM()">닫기</button>
         </div>
     </div>
@@ -115,32 +106,40 @@
     const times = ["09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00"];
     let currentData = {};
     const SYNC_URL = "https://kvdb.io/6Z9uH2hRjH8qR5eD8a5d3f/";
+    const MY_SHOP_ID = "jjy71330"; // ✅ 사장님 전용 코드로 고정
 
     function init() {
-        if(!localStorage.getItem('my_shop_id')) { localStorage.setItem('my_shop_id', '1234'); }
-        document.getElementById('shop-id').value = localStorage.getItem('my_shop_id');
         const d = new Date();
         document.getElementById('target-date').value = d.toISOString().split('T')[0];
         loadData();
-        setInterval(loadData, 10000);
+        setInterval(loadData, 5000); // 5초마다 자동 동기화
     }
 
     async function loadData() {
-        const shopId = document.getElementById('shop-id').value;
         const date = document.getElementById('target-date').value;
-        localStorage.setItem('my_shop_id', shopId);
         try {
-            const res = await fetch(`${SYNC_URL}${shopId}_${date}`);
-            if (res.ok) { currentData = await res.json(); document.getElementById('sync-status').innerText = "(연결됨)"; }
+            const res = await fetch(`${SYNC_URL}${MY_SHOP_ID}_${date}`);
+            if (res.ok) {
+                currentData = await res.json();
+                document.getElementById('sync-status').innerText = "🟢 실시간 연결됨";
+            } else {
+                currentData = {};
+                document.getElementById('sync-status').innerText = "⚪ 데이터 대기 중";
+            }
             render();
-        } catch (e) { document.getElementById('sync-status').innerText = "(확인 중)"; }
+        } catch (e) { document.getElementById('sync-status').innerText = "🔴 연결 끊김 (확인 요망)"; }
     }
 
     async function saveData() {
-        const shopId = document.getElementById('shop-id').value;
         const date = document.getElementById('target-date').value;
-        try { await fetch(`${SYNC_URL}${shopId}_${date}`, { method: 'POST', body: JSON.stringify(currentData) }); }
-        catch (e) { alert("인터넷을 확인하세요."); }
+        document.getElementById('sync-status').innerText = "🟡 저장 중...";
+        try {
+            await fetch(`${SYNC_URL}${MY_SHOP_ID}_${date}`, {
+                method: 'POST',
+                body: JSON.stringify(currentData)
+            });
+            document.getElementById('sync-status').innerText = "🟢 저장 완료";
+        } catch (e) { alert("인터넷 연결을 확인하세요."); }
         render();
     }
 
@@ -234,4 +233,3 @@
 </script>
 </body>
 </html>
-
