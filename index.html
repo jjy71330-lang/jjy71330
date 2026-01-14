@@ -3,41 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ACDelco 예약대장</title>
+    <title>ACDelco 예약대장 (최종)</title>
     <style>
-        /* 화면 전체 디자인 */
         body { font-family: 'Malgun Gothic', sans-serif; background-color: #f0f2f5; margin: 0; padding: 10px; }
         .container { max-width: 1000px; margin: 0 auto; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
-        
         .header { text-align: center; border-bottom: 3px solid #000; padding-bottom: 10px; margin-bottom: 15px; }
-        .header h1 { margin: 0; font-size: 26px; color: #000; }
-
-        /* 상태창 */
         .status-bar { background: #1e293b; color: white; padding: 10px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; font-size: 14px; }
-        #sync-text { font-weight: bold; padding: 3px 8px; border-radius: 4px; background: #555; }
-
-        /* 날짜 선택 */
+        #sync-text { font-weight: bold; padding: 3px 8px; border-radius: 4px; background: #666; }
         .date-bar { display: flex; justify-content: center; align-items: center; gap: 10px; margin-bottom: 15px; }
         .btn { border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 16px; }
         .btn-blue { background: #4f46e5; color: white; }
-        .btn-green { background: #28a745; color: white; }
         #target-date { font-size: 20px; font-weight: bold; padding: 5px; border: 2px solid #ddd; }
-
-        /* 표 만들기 */
         .grid-head { display: grid; grid-template-columns: 80px 1fr 1fr 1fr; gap: 5px; background: #eee; text-align: center; font-weight: bold; padding: 10px 0; border-bottom: 2px solid #333; }
-        .row { display: grid; grid-template-columns: 80px 1fr 1fr 1fr; gap: 5px; border-bottom: 1px solid #ddd; min-height: 100px; padding: 5px 0; }
+        .row { display: grid; grid-template-columns: 80px 1fr 1fr 1fr; gap: 5px; border-bottom: 1px solid #ddd; min-height: 105px; padding: 5px 0; }
         .time-cell { display: flex; align-items: center; justify-content: center; font-weight: bold; background: #f8f9fa; font-size: 18px; }
-        
-        /* 예약 칸 */
-        .slot { background: #fff; border: 1px solid #ccc; border-radius: 6px; padding: 5px; cursor: pointer; display: flex; flex-direction: column; justify-content: center; overflow: hidden; }
+        .slot { background: #fff; border: 1px solid #ccc; border-radius: 6px; padding: 8px; cursor: pointer; display: flex; flex-direction: column; justify-content: center; overflow: hidden; }
         .slot.booked { background-color: #0052cc !important; color: white !important; }
         .slot.done { background-color: #7f8c8d !important; color: #ccc !important; }
-        
-        .car-no { font-weight: 900; font-size: 19px; }
-        .car-info { font-size: 14px; }
+        .car-no { font-weight: 900; font-size: 20px; margin-bottom: 2px; }
+        .car-info { font-size: 14px; opacity: 0.9; }
         .worker { font-size: 14px; color: #ffeb3b; font-weight: bold; }
-
-        /* 입력창(모달) */
         #modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); justify-content:center; align-items:center; z-index:999; }
         .modal-box { background:white; padding:20px; border-radius:12px; width:320px; }
         input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-size: 16px; }
@@ -46,24 +31,18 @@
     </style>
 </head>
 <body>
-
 <div class="container">
     <div class="header"><h1>ACDelco 예약대장</h1></div>
-    
     <div class="status-bar">
-        <div>📡 상태: <span id="sync-text">연결중...</span></div>
-        <button class="btn" onclick="loadData()" style="padding: 5px 10px; font-size: 12px;">🔄 새로고침</button>
+        <div>📡 상태: <span id="sync-text">연결 대기중</span></div>
+        <button onclick="loadData()" style="cursor:pointer; padding:5px 10px;">🔄 새로고침</button>
     </div>
-
     <div class="date-bar">
         <button class="btn btn-blue" onclick="moveDate(-1)">◀ 어제</button>
         <input type="date" id="target-date" onchange="loadData()">
         <button class="btn btn-blue" onclick="moveDate(1)">내일 ▶</button>
     </div>
-
-    <div class="grid-head">
-        <div>시간</div><div>리프트 1</div><div>리프트 2</div><div>리프트 3</div>
-    </div>
+    <div class="grid-head"><div>시간</div><div>리프트 1</div><div>리프트 2</div><div>리프트 3</div></div>
     <div id="table-body"></div>
 </div>
 
@@ -74,9 +53,7 @@
         <input type="text" id="inModel" placeholder="차종">
         <input type="text" id="inWork" placeholder="작업내용">
         <input type="text" id="inWorker" placeholder="담당자">
-        <div style="margin: 10px 0;">
-            <label style="font-weight:bold;"><input type="checkbox" id="inDone"> 정비 완료</label>
-        </div>
+        <div style="margin: 10px 0;"><label><input type="checkbox" id="inDone"> 정비 완료</label></div>
         <div class="modal-btns">
             <button style="background:#4f46e5; color:white;" onclick="doSave()">저장</button>
             <button style="background:#dc3545; color:white;" onclick="doDelete()">삭제</button>
@@ -89,17 +66,18 @@
     const timeList = ["09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00"];
     let db = {};
     let selectedId = "";
-    const KEY_URL = "https://kvdb.io/A8v8bY6G7z5Lq9x4E3wR1t/jjy_v3"; // 저장소 주소
+    let isSaving = false; // 🔒 저장 중 새로고침 방지 잠금장치
+    const KEY_URL = "https://kvdb.io/A8v8bY6G7z5Lq9x4E3wR1t/jjy_final_2026"; 
 
     function init() {
         const today = new Date().toISOString().split('T')[0];
         document.getElementById('target-date').value = today;
         loadData();
-        setInterval(loadData, 10000); // 10초마다 자동 업데이트
+        setInterval(() => { if(!isSaving) loadData(); }, 10000); // 10초마다 자동 연동
     }
 
-    // 데이터 불러오기
     async function loadData() {
+        if (isSaving) return; // 저장 중에는 서버 데이터를 가져오지 않음 (사라짐 방지)
         const date = document.getElementById('target-date').value;
         try {
             const res = await fetch(`${KEY_URL}_${date}?t=${Date.now()}`);
@@ -112,37 +90,39 @@
                 document.getElementById('sync-text').innerText = "⚪ 새 문서";
                 document.getElementById('sync-text').style.background = "#666";
             }
+            render();
         } catch (e) {
             document.getElementById('sync-text').innerText = "🔴 연결끊김";
             document.getElementById('sync-text').style.background = "#dc3545";
         }
-        render();
     }
 
-    // 서버에 저장하기
     async function saveData() {
+        isSaving = true; // 🔒 잠금!
         const date = document.getElementById('target-date').value;
+        document.getElementById('sync-text').innerText = "🟡 서버에 저장 중...";
         try {
             await fetch(`${KEY_URL}_${date}`, {
                 method: 'POST',
                 body: JSON.stringify(db)
             });
             document.getElementById('sync-text').innerText = "✅ 서버저장 완료";
+            document.getElementById('sync-text').style.background = "#28a745";
         } catch (e) {
-            document.getElementById('sync-status').innerText = "⚠️ 서버전송 실패";
+            document.getElementById('sync-text').innerText = "⚠️ 전송 실패";
         }
+        // 저장 후 5초 뒤에 잠금 해제 (서버가 데이터를 완전히 처리할 시간 확보)
+        setTimeout(() => { isSaving = false; }, 5000);
     }
 
-    // 화면 그리기
     function render() {
         const container = document.getElementById('table-body');
+        if(!container) return;
         container.innerHTML = '';
-
         timeList.forEach(t => {
             const row = document.createElement('div');
             row.className = 'row';
             row.innerHTML = `<div class="time-cell">${t}</div>`;
-
             if (t === "12:00") {
                 row.innerHTML += `<div style="grid-column: span 3; background:#ffe3e3; color:#e03131; display:flex; align-items:center; justify-content:center; font-weight:bold;">🍴 점 심 시 간</div>`;
             } else {
@@ -151,15 +131,10 @@
                     const data = db[id];
                     let slotClass = 'slot';
                     let content = '';
-
                     if (data) {
                         slotClass += ' booked';
                         if (data.isDone) slotClass += ' done';
-                        content = `
-                            <div class="car-no">${data.isDone ? '✅' : ''}${data.carNo}</div>
-                            <div class="car-info">${data.model}</div>
-                            <div class="worker">${data.worker}</div>
-                        `;
+                        content = `<div class="car-no">${data.isDone ? '✅' : ''}${data.carNo}</div><div class="car-info">${data.model}</div><div class="worker">${data.worker}</div>`;
                     }
                     row.innerHTML += `<div class="${slotClass}" onclick="openModal('${id}')">${content}</div>`;
                 }
@@ -184,8 +159,8 @@
     function doSave() {
         const carNo = document.getElementById('inCarNo').value;
         if (!carNo) return alert("차량번호를 써주세요!");
-
-        // 1. 데이터 저장
+        
+        // 1. 머릿속에 즉시 저장
         db[selectedId] = {
             carNo: carNo,
             model: document.getElementById('inModel').value,
@@ -193,12 +168,10 @@
             worker: document.getElementById('inWorker').value,
             isDone: document.getElementById('inDone').checked
         };
-
-        // 2. 즉시 화면 업데이트
+        // 2. 내 화면에 즉시 그리기
         render();
         closeModal();
-
-        // 3. 서버 전송
+        // 3. 서버에 조용히 전송
         saveData();
     }
 
@@ -217,7 +190,6 @@
         loadData();
     }
 
-    // 앱 시작
     init();
 </script>
 </body>
