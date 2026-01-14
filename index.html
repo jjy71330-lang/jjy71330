@@ -10,7 +10,6 @@
         .main-header { text-align: center; color: #000; margin: 5px 0; border-bottom: 3px solid #000; padding-bottom: 5px; }
         .main-header h1 { font-size: 28px; margin: 0; }
 
-        /* 상태 표시바 */
         .status-bar { background: #1e293b; color: white; padding: 8px 15px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; font-size: 14px; }
         #sync-status { font-weight: bold; }
 
@@ -23,27 +22,20 @@
         .time-label { display: flex; align-items: center; justify-content: center; font-weight: 900; background: #f8f9fa; border-radius: 4px; font-size: 18px; }
         
         .lift-slot { background: #fff; border: 1px solid #ccc; border-radius: 6px; padding: 8px; cursor: pointer; overflow: hidden; display: flex; flex-direction: column; position: relative; justify-content: center; }
-        
-        /* 예약 상태 색상 */
         .lift-slot.booked { background-color: #0052cc !important; color: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
         .lift-slot.extended { background-color: #e67e22 !important; color: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
         .lift-slot.completed { background-color: #7f8c8d !important; color: #e0e0e0 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
         
         .lift-slot.lunch { background: #ffe3e3 !important; grid-column: span 3; display: flex; align-items: center; justify-content: center; color: #e03131; font-weight: bold; height: 50px; font-size: 20px; }
         
-        /* 정보 4단 표시 */
         .info-carNo { font-weight: 900; font-size: 19px; margin-bottom: 2px; } 
         .info-carModel { font-weight: bold; font-size: 15px; margin-bottom: 3px; opacity: 0.9; }
         .info-work { font-size: 13px; margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } 
-        .info-worker { font-size: 14px; font-weight: 900; color: #ffeb3b; } /* 작업자 노란색 */
+        .info-worker { font-size: 14px; font-weight: 900; color: #ffeb3b; }
 
-        .lift-slot.completed .info-carNo { text-decoration: line-through; opacity: 0.6; }
-
-        /* 입력창 모달 */
         #modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); justify-content:center; align-items:center; z-index:100; }
         .modal-content { background:white; padding:25px; border-radius:15px; width:350px; color: #333; }
-        .modal-content label { display: block; font-size: 13px; font-weight: bold; margin-top: 10px; }
-        input, select { width:100%; padding:12px; margin-top: 5px; box-sizing:border-box; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; }
+        input, select { width:100%; padding:12px; margin-top: 5px; box-sizing:border-box; border: 1px solid #ddd; border-radius: 6px; font-size: 16px; }
         .btn-group { display: flex; gap: 8px; margin-top: 20px; }
         .btn-group button { flex: 1; padding: 15px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 16px; }
 
@@ -65,7 +57,7 @@
     </div>
 
     <div class="status-bar no-print">
-        <div>📡 <b>실시간 공유 모드 (매장 자동연결)</b></div>
+        <div>📡 <b>실시간 공유 모드</b></div>
         <div id="sync-status">연결 확인 중...</div>
     </div>
 
@@ -105,14 +97,17 @@
 <script>
     const times = ["09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00"];
     let currentData = {};
+    let isSaving = false; // ✅ 저장 중인지 체크하는 변수
     const SYNC_URL = "https://kvdb.io/6Z9uH2hRjH8qR5eD8a5d3f/";
-    const MY_SHOP_ID = "jjy71330"; // ✅ 사장님 전용 코드로 고정
+    const MY_SHOP_ID = "jjy71330"; 
 
     function init() {
         const d = new Date();
         document.getElementById('target-date').value = d.toISOString().split('T')[0];
         loadData();
-        setInterval(loadData, 5000); // 5초마다 자동 동기화
+        setInterval(() => {
+            if (!isSaving) loadData(); // ✅ 저장 중이 아닐 때만 새로고침 실행
+        }, 5000); 
     }
 
     async function loadData() {
@@ -120,26 +115,40 @@
         try {
             const res = await fetch(`${SYNC_URL}${MY_SHOP_ID}_${date}`);
             if (res.ok) {
-                currentData = await res.json();
+                const newData = await res.json();
+                if (!isSaving) { // ✅ 한 번 더 체크해서 안전하게 덮어쓰기
+                    currentData = newData;
+                    render();
+                }
                 document.getElementById('sync-status').innerText = "🟢 실시간 연결됨";
             } else {
-                currentData = {};
-                document.getElementById('sync-status').innerText = "⚪ 데이터 대기 중";
+                if (!isSaving) {
+                    currentData = {};
+                    render();
+                }
+                document.getElementById('sync-status').innerText = "⚪ 예약 가능 (정상)";
             }
-            render();
-        } catch (e) { document.getElementById('sync-status').innerText = "🔴 연결 끊김 (확인 요망)"; }
+        } catch (e) { document.getElementById('sync-status').innerText = "🔴 연결 확인 중..."; }
     }
 
     async function saveData() {
+        isSaving = true; // ✅ 저장 시작 (새로고침 일시 정지)
         const date = document.getElementById('target-date').value;
-        document.getElementById('sync-status').innerText = "🟡 저장 중...";
+        document.getElementById('sync-status').innerText = "🟡 인터넷에 저장 중...";
+        
         try {
-            await fetch(`${SYNC_URL}${MY_SHOP_ID}_${date}`, {
+            const response = await fetch(`${SYNC_URL}${MY_SHOP_ID}_${date}`, {
                 method: 'POST',
                 body: JSON.stringify(currentData)
             });
-            document.getElementById('sync-status').innerText = "🟢 저장 완료";
-        } catch (e) { alert("인터넷 연결을 확인하세요."); }
+            if(response.ok) {
+                document.getElementById('sync-status').innerText = "🟢 저장 완료!";
+                setTimeout(() => { isSaving = false; }, 3000); // ✅ 저장 후 3초 뒤에 새로고침 다시 허용
+            }
+        } catch (e) { 
+            alert("저장 실패! 인터넷을 확인하세요."); 
+            isSaving = false;
+        }
         render();
     }
 
@@ -176,7 +185,6 @@
         });
     }
 
-    let currentSlotId = null;
     function openM(id) {
         currentSlotId = id;
         const item = currentData[id] || {carNo:'', carModel:'', phone:'', work:'', worker:'', duration:1, isDone:false};
