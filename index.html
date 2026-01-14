@@ -10,13 +10,16 @@
         .main-header { text-align: center; color: #000; margin: 5px 0 15px 0; border-bottom: 3px solid #000; padding-bottom: 10px; }
         .main-header h1 { font-size: 30px; margin: 0; font-weight: 900; }
 
-        /* 상태 표시바 강화 */
         .status-bar { background: #1e293b; color: white; padding: 10px 15px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; font-size: 14px; }
         #sync-status { font-weight: bold; padding: 4px 10px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.3); }
 
         .date-navigation { display: flex; justify-content: center; align-items: center; gap: 8px; margin-bottom: 15px; background: #eef2ff; padding: 12px; border-radius: 8px; }
         .date-btn { background: #4f46e5; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 17px; }
         #target-date { font-size: 20px; font-weight: bold; padding: 5px; border: 2px solid #ddd; border-radius: 6px; }
+
+        /* 새로고침 버튼 스타일 강화 */
+        #refresh-btn { padding: 10px 15px; cursor: pointer; background: #fff; border: 2px solid #4f46e5; border-radius: 6px; font-weight: bold; color: #4f46e5; transition: 0.2s; }
+        #refresh-btn:active { background: #4f46e5; color: #fff; transform: scale(0.95); }
 
         .grid-header { display: grid; grid-template-columns: 80px 1fr 1fr 1fr; gap: 6px; font-weight: bold; text-align: center; border-bottom: 3px solid #333; padding: 12px 0; background: #eee; font-size: 18px; }
         .time-row { display: grid; grid-template-columns: 80px 1fr 1fr 1fr; gap: 6px; padding: 4px 0; border-bottom: 1px solid #ddd; height: 110px; }
@@ -53,7 +56,7 @@
         <button class="date-btn" onclick="changeDate(-1)">◀ 어제</button>
         <input type="date" id="target-date" onchange="loadData()">
         <button class="date-btn" onclick="changeDate(1)">내일 ▶</button>
-        <button onclick="loadData()" style="padding:10px; cursor:pointer; background:#fff; border:1px solid #ccc; border-radius:6px; font-weight:bold;">🔄 새로고침</button>
+        <button id="refresh-btn" onclick="manualRefresh()">🔄 새로고침</button>
     </div>
     <div class="grid-header"><div>시간</div><div>리프트 1</div><div>리프트 2</div><div>리프트 3</div></div>
     <div id="timetable"></div>
@@ -83,10 +86,8 @@
     const times = ["09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00"];
     let currentData = {};
     let saveLock = false; 
-    
-    // ✅ 보관함 주소를 더 안정적인 곳으로 살짝 변경했습니다.
     const SYNC_URL = "https://kvdb.io/6Z9uH2hRjH8qR5eD8a5d3f/"; 
-    const MY_SHOP_ID = "jjy71330_v2"; // 아이디 뒤에 v2를 붙여 새 방을 만들었습니다.
+    const MY_SHOP_ID = "jjy71330_v2"; 
 
     function setStatus(text, color) {
         const s = document.getElementById('sync-status');
@@ -96,31 +97,34 @@
     function init() {
         const d = new Date();
         document.getElementById('target-date').value = d.toISOString().split('T')[0];
-        
-        // 내 기기 백업 데이터 로드
         const backup = localStorage.getItem('bk_v2_' + document.getElementById('target-date').value);
         if(backup) { currentData = JSON.parse(backup); }
-        
         render();
         loadData();
-        // 5초마다 자동으로 다른 기기 내용 가져오기
-        setInterval(() => { if(!saveLock) loadData(); }, 5000); 
+        setInterval(() => { if(!saveLock) loadData(); }, 7000); 
+    }
+
+    // 수동 새로고침 버튼 전용 함수
+    async function manualRefresh() {
+        const btn = document.getElementById('refresh-btn');
+        btn.innerText = "⏳ 읽는 중...";
+        btn.style.opacity = "0.5";
+        saveLock = false; // 수동으로 누를 땐 잠금 강제 해제
+        await loadData();
+        btn.innerText = "🔄 새로고침";
+        btn.style.opacity = "1";
     }
 
     async function loadData() {
-        if(saveLock) return;
         const date = document.getElementById('target-date').value;
         try {
-            // 캐시를 무시하고 항상 새로운 데이터를 가져오도록 설정 (핵심!)
             const res = await fetch(`${SYNC_URL}${MY_SHOP_ID}_${date}?t=${Date.now()}`, { cache: 'no-store' });
             if (res.ok) {
                 const serverData = await res.json();
-                if(!saveLock) {
-                    currentData = serverData;
-                    localStorage.setItem('bk_v2_' + date, JSON.stringify(currentData));
-                    render(); 
-                    setStatus("🟢 연동 중 (정상)", "#28a745");
-                }
+                currentData = serverData;
+                localStorage.setItem('bk_v2_' + date, JSON.stringify(currentData));
+                render(); 
+                setStatus("🟢 연동 중 (정상)", "#28a745");
             } else { setStatus("⚪ 연결됨 (데이터 없음)", "#666"); }
         } catch (e) { setStatus("🔴 연결 확인 필요", "#dc3545"); }
     }
@@ -129,8 +133,6 @@
         saveLock = true; 
         const date = document.getElementById('target-date').value;
         setStatus("🟡 서버에 저장 중...", "#f1c40f");
-        
-        // 내 기기에 즉시 저장
         localStorage.setItem('bk_v2_' + date, JSON.stringify(currentData));
         render();
 
