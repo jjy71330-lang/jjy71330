@@ -5,62 +5,121 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ACDelco서비스센터 예약대장</title>
     <style>
-        body { font-family: 'Malgun Gothic', sans-serif; background-color: #f0f2f5; padding: 10px; margin: 0; }
+        /* 기본 배경 및 폰트 설정 */
+        body { font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif; background-color: #f0f2f5; padding: 10px; margin: 0; }
         .container { max-width: 1050px; margin: 0 auto; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-        .main-header { text-align: center; color: #000; margin: 5px 0; border-bottom: 3px solid #000; padding-bottom: 5px; }
-        .main-header h1 { font-size: 28px; margin: 0; }
-        .status-bar { background: #1e293b; color: white; padding: 8px 15px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; font-size: 14px; }
-        #sync-status { font-weight: bold; padding: 4px 10px; border-radius: 4px; transition: 0.3s; }
-        .date-navigation { display: flex; justify-content: center; align-items: center; gap: 10px; margin-bottom: 10px; background: #eef2ff; padding: 10px; border-radius: 8px; }
-        .date-btn { background: #4f46e5; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; }
-        #target-date { font-size: 20px; font-weight: bold; padding: 5px; border: 1px solid #ddd; border-radius: 4px; }
-        .grid-header { display: grid; grid-template-columns: 80px 1fr 1fr 1fr; gap: 6px; font-weight: bold; text-align: center; border-bottom: 2px solid #333; padding: 12px 0; background: #eee; font-size: 18px; }
-        .time-row { display: grid; grid-template-columns: 80px 1fr 1fr 1fr; gap: 6px; padding: 4px 0; border-bottom: 1px solid #ddd; height: 110px; }
-        .time-label { display: flex; align-items: center; justify-content: center; font-weight: 900; background: #f8f9fa; border-radius: 4px; font-size: 18px; }
-        .lift-slot { background: #fff; border: 1px solid #ccc; border-radius: 6px; padding: 8px; cursor: pointer; overflow: hidden; display: flex; flex-direction: column; position: relative; justify-content: center; }
-        .lift-slot.booked { background-color: #0052cc !important; color: white !important; }
-        .lift-slot.extended { background-color: #e67e22 !important; color: white !important; }
-        .lift-slot.completed { background-color: #7f8c8d !important; color: #e0e0e0 !important; }
-        .lift-slot.lunch { background: #ffe3e3 !important; grid-column: span 3; display: flex; align-items: center; justify-content: center; color: #e03131; font-weight: bold; height: 50px; font-size: 20px; }
-        .info-carNo { font-weight: 900; font-size: 19px; margin-bottom: 2px; } 
-        .info-carModel { font-weight: bold; font-size: 15px; margin-bottom: 3px; opacity: 0.9; }
-        .info-work { font-size: 13px; margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } 
-        .info-worker { font-size: 14px; font-weight: 900; color: #ffeb3b; }
+        
+        /* 제목 크게 */
+        .main-header { text-align: center; color: #000; margin: 5px 0 15px 0; border-bottom: 3px solid #000; padding-bottom: 10px; }
+        .main-header h1 { font-size: 32px; margin: 0; font-weight: 900; }
+
+        /* 상태 표시바 */
+        .status-bar { background: #1e293b; color: white; padding: 10px 15px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; font-size: 15px; }
+        #sync-status { font-weight: bold; padding: 4px 12px; border-radius: 6px; }
+
+        /* 날짜 이동 버튼 크게 */
+        .date-navigation { display: flex; justify-content: center; align-items: center; gap: 10px; margin-bottom: 15px; background: #eef2ff; padding: 12px; border-radius: 8px; }
+        .date-btn { background: #4f46e5; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 18px; }
+        #target-date { font-size: 22px; font-weight: bold; padding: 5px 15px; border: 2px solid #ddd; border-radius: 6px; }
+
+        /* 표 헤더 (시간/리프트1/2/3) */
+        .grid-header { display: grid; grid-template-columns: 85px 1fr 1fr 1fr; gap: 8px; font-weight: bold; text-align: center; border-bottom: 3px solid #333; padding: 15px 0; background: #eee; font-size: 20px; }
+        
+        /* 예약 칸 높이 및 구조 */
+        .time-row { display: grid; grid-template-columns: 85px 1fr 1fr 1fr; gap: 8px; padding: 5px 0; border-bottom: 1px solid #ddd; height: 115px; }
+        .time-label { display: flex; align-items: center; justify-content: center; font-weight: 900; background: #f8f9fa; border-radius: 6px; font-size: 18px; color: #333; }
+        
+        /* 칸 전체 색상 채우기 및 글자 설정 */
+        .lift-slot { background: #fff; border: 1px solid #bbb; border-radius: 8px; padding: 8px 12px; cursor: pointer; overflow: hidden; display: flex; flex-direction: column; position: relative; justify-content: center; transition: 0.2s; }
+        
+        /* 예약 상태별 색상 */
+        .lift-slot.booked { background-color: #0052cc !important; color: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        .lift-slot.extended { background-color: #e67e22 !important; color: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        .lift-slot.completed { background-color: #7f8c8d !important; color: #e0e0e0 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        
+        /* 점심시간 */
+        .lunch-row { background: #ffe3e3 !important; grid-column: span 3; display: flex; align-items: center; justify-content: center; color: #e03131; font-weight: bold; height: 50px; font-size: 20px; border-radius: 6px; }
+        
+        /* 정보 4단 텍스트 (더 크게!) */
+        .info-carNo { font-weight: 900; font-size: 20px; margin-bottom: 2px; line-height: 1.1; } 
+        .info-carModel { font-weight: bold; font-size: 16px; margin-bottom: 3px; opacity: 0.95; }
+        .info-work { font-size: 14px; margin-bottom: 4px; color: rgba(255,255,255,0.9); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } 
+        .info-worker { font-size: 15px; font-weight: 900; color: #ffeb3b; } /* 담당자 강조 */
+
+        .lift-slot.completed .info-carNo { text-decoration: line-through; opacity: 0.7; }
+
+        /* 입력창 모달 */
         #modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); justify-content:center; align-items:center; z-index:100; }
-        .modal-content { background:white; padding:25px; border-radius:15px; width:350px; color: #333; }
-        input, select { width:100%; padding:12px; margin-top: 5px; box-sizing:border-box; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; }
+        .modal-content { background:white; padding:25px; border-radius:18px; width:360px; color: #333; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        .modal-content label { display: block; font-size: 14px; font-weight: bold; margin-top: 10px; color: #555; }
+        input, select { width:100%; padding:12px; margin-top: 5px; box-sizing:border-box; border: 1px solid #ddd; border-radius: 8px; font-size: 17px; }
+        
         .btn-group { display: flex; gap: 8px; margin-top: 20px; }
-        .btn-group button { flex: 1; padding: 15px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 16px; }
-        @media print { @page { size: A4 portrait; margin: 8mm 5mm; } .no-print, #modal { display: none !important; } .container { width: 100%; max-width: 100%; box-shadow: none; border: none; padding: 0; } .time-row { height: 100px; border: 1px solid #000; margin-top: -1px; } .info-worker { color: #000 !important; background: #ffff00; padding: 0 2px; } * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; } }
+        .btn-group button { flex: 1; padding: 15px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 17px; }
+
+        /* 인쇄 최적화 (A4 세로 한 장) */
+        @media print {
+            @page { size: A4 portrait; margin: 5mm 5mm; }
+            body { background: white; padding: 0; }
+            .no-print, #modal { display: none !important; }
+            .container { width: 100%; max-width: 100%; box-shadow: none; border: none; padding: 0; }
+            .time-row { height: 110px; border: 1px solid #000; margin-top: -1px; }
+            .info-carNo { font-size: 18px; color: #000 !important; }
+            .info-worker { color: #000 !important; background: #ffff00; padding: 0 2px; }
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        }
     </style>
 </head>
 <body>
+
 <div class="container">
-    <div class="main-header"><h1>ACDelco서비스센터 예약대장</h1></div>
+    <div class="main-header">
+        <h1>ACDelco서비스센터 예약대장</h1>
+    </div>
+
     <div class="status-bar no-print">
         <div>📡 <b>실시간 통합 공유 모드</b></div>
         <div id="sync-status" style="background: #666;">연결 준비 중...</div>
     </div>
+
     <div class="date-navigation no-print">
         <button class="date-btn" onclick="changeDate(-1)">◀ 어제</button>
         <input type="date" id="target-date" onchange="loadData()">
         <button class="date-btn" onclick="changeDate(1)">내일 ▶</button>
-        <button onclick="window.print()" style="margin-left:15px; padding:8px 15px; cursor:pointer; background:#28a745; color:white; border:none; border-radius:4px; font-weight:bold;">🖨️ 인쇄하기</button>
+        <button onclick="window.print()" style="margin-left:10px; padding:10px 20px; cursor:pointer; background:#28a745; color:white; border:none; border-radius:6px; font-weight:bold; font-size:16px;">🖨️ 인쇄하기</button>
     </div>
-    <div class="grid-header"><div>시간</div><div>리프트 1</div><div>리프트 2</div><div>리프트 3</div></div>
+    
+    <div class="grid-header">
+        <div>시간</div><div>리프트 1</div><div>리프트 2</div><div>리프트 3</div>
+    </div>
+    
     <div id="timetable"></div>
 </div>
+
 <div id="modal">
     <div class="modal-content">
-        <h2 style="margin:0 0 15px 0; text-align:center; color:#4f46e5;">예약 등록</h2>
-        <label>차량번호</label><input type="text" id="carNo"><label>차종</label><input type="text" id="carModel">
-        <label>수리사항</label><input type="text" id="work"><label>🛠️ 작업자</label><input type="text" id="worker">
-        <label>📞 전화번호</label><input type="text" id="phone">
-        <div style="display:flex; gap:10px;"><div style="flex:1;"><label>시간</label><select id="duration"><option value="1">1시간</option><option value="2">2시간</option><option value="3">3시간</option><option value="4">4시간</option></select></div><div style="flex:1; display:flex; align-items:flex-end;"><label style="cursor:pointer; display:flex; align-items:center; gap:5px; margin-bottom:15px; font-weight:bold;"><input type="checkbox" id="isDone"> 완료</label></div></div>
-        <div class="btn-group"><button style="background:#4f46e5; color:white;" onclick="save()">저장하기</button><button style="background:#dc3545; color:white;" onclick="del()">삭제</button><button style="background:#6c757d; color:white;" onclick="closeM()">닫기</button></div>
+        <h2 style="margin:0 0 15px 0; text-align:center; color:#4f46e5;">정비 예약 등록</h2>
+        <label>차량번호</label><input type="text" id="carNo" placeholder="예: 12가 3456">
+        <label>차종</label><input type="text" id="carModel" placeholder="예: 알페온">
+        <label>수리사항</label><input type="text" id="work" placeholder="예: 엔진오일 교환">
+        <label>🛠️ 작업자(담당자)</label><input type="text" id="worker" placeholder="예: 홍길동">
+        <label>📞 전화번호 (메인화면 미표시)</label><input type="text" id="phone">
+        
+        <div style="display:flex; gap:10px;">
+            <div style="flex:1;"><label>소요 시간</label><select id="duration"><option value="1">1시간</option><option value="2">2시간</option><option value="3">3시간</option><option value="4">4시간</option></select></div>
+            <div style="flex:1; display:flex; align-items:flex-end;"><label style="cursor:pointer; display:flex; align-items:center; gap:8px; margin-bottom:15px; font-weight:bold; font-size:17px;"><input type="checkbox" id="isDone" style="width:20px; height:20px;"> 정비완료</label></div>
+        </div>
+
+        <div class="btn-group">
+            <button style="background:#4f46e5; color:white;" onclick="save()">저장하기</button>
+            <button style="background:#dc3545; color:white;" onclick="del()">삭제하기</button>
+            <button style="background:#6c757d; color:white;" onclick="closeM()">닫기</button>
+        </div>
     </div>
 </div>
+
 <script>
+    // ✅ 시간표를 만드는 핵심 데이터 (이게 빠지면 칸이 안 그려집니다!)
     const times = ["09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00"];
     let currentData = {};
     let saveLock = false; 
@@ -69,74 +128,91 @@
 
     function setStatus(text, color) {
         const s = document.getElementById('sync-status');
-        s.innerText = text;
-        s.style.background = color;
+        if(s) { s.innerText = text; s.style.background = color; }
     }
 
     function init() {
         const d = new Date();
-        document.getElementById('target-date').value = d.toISOString().split('T')[0];
-        const local = localStorage.getItem('backup_' + document.getElementById('target-date').value);
-        if(local) { currentData = JSON.parse(local); render(); }
-        loadData();
-        setInterval(() => { if (!saveLock) loadData(); }, 7000); 
+        const dateInput = document.getElementById('target-date');
+        if(dateInput) {
+            dateInput.value = d.toISOString().split('T')[0];
+            // 내 폰 백업 데이터 먼저 읽기
+            const backup = localStorage.getItem('bk_' + dateInput.value);
+            if(backup) { currentData = JSON.parse(backup); }
+        }
+        
+        render(); // 칸 먼저 그리기!
+        loadData(); // 서버에서 최신 데이터 가져오기
+        
+        setInterval(() => { if(!saveLock) loadData(); }, 10000); 
     }
 
     async function loadData() {
         if(saveLock) return;
         const date = document.getElementById('target-date').value;
         try {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 5000); // 불러오기도 5초 지나면 취소
-            const res = await fetch(`${SYNC_URL}${MY_SHOP_ID}_${date}`, { signal: controller.signal });
-            clearTimeout(timeoutId);
+            const res = await fetch(`${SYNC_URL}${MY_SHOP_ID}_${date}`);
             if (res.ok) {
-                currentData = await res.json();
-                localStorage.setItem('backup_' + date, JSON.stringify(currentData));
-                render(); setStatus("🟢 실시간 연결됨", "#28a745");
-            } else { setStatus("⚪ 예약 가능", "#666"); }
-        } catch (e) { setStatus("🔴 연결 확인 중", "#dc3545"); }
+                const serverData = await res.json();
+                if(!saveLock) {
+                    currentData = serverData;
+                    localStorage.setItem('bk_' + date, JSON.stringify(currentData));
+                    render(); 
+                    setStatus("🟢 실시간 연결됨", "#28a745");
+                }
+            } else { setStatus("⚪ 예약 가능 (정상)", "#666"); }
+        } catch (e) { setStatus("🔴 연결 확인 중...", "#dc3545"); }
     }
 
     async function saveData() {
         saveLock = true; 
         const date = document.getElementById('target-date').value;
         setStatus("🟡 인터넷 저장 중...", "#f1c40f");
-        localStorage.setItem('backup_' + date, JSON.stringify(currentData)); // 즉시 내 폰에 저장
+        
+        localStorage.setItem('bk_' + date, JSON.stringify(currentData));
+        render();
 
         try {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 8000); // ✅ 8초 지나면 무조건 중단
-            const response = await fetch(`${SYNC_URL}${MY_SHOP_ID}_${date}`, {
-                method: 'POST',
-                body: JSON.stringify(currentData),
-                signal: controller.signal
+            await fetch(`${SYNC_URL}${MY_SHOP_ID}_${date}`, {
+                method: 'POST', body: JSON.stringify(currentData)
             });
-            clearTimeout(timeoutId);
-            if(response.ok) { setStatus("✅ 저장 성공!", "#28a745"); setTimeout(() => { saveLock = false; }, 3000); }
-            else { throw new Error(); }
-        } catch (e) { 
-            setStatus("⚠️ 폰에만 임시저장됨", "#e67e22"); // 서버가 느리면 주황색 표시
-            saveLock = false; // 🔒 무조건 잠금 해제해서 다음 작업 가능하게 함
-        }
-        render();
+            setStatus("✅ 저장 성공!", "#28a745");
+        } catch (e) { setStatus("⚠️ 폰에만 임시저장", "#e67e22"); }
+        
+        setTimeout(() => { saveLock = false; }, 3000); 
     }
 
+    // ✅ 칸을 그려주는 함수 (클릭이 가능하게 만드는 핵심!)
     function render() {
         const target = document.getElementById('timetable');
-        if(!target) return; target.innerHTML = '';
+        if(!target) return; 
+        target.innerHTML = ''; // 초기화 후 다시 그리기
+
         times.forEach(t => {
             const row = document.createElement('div');
             row.className = 'time-row';
             row.innerHTML = `<div class="time-label">${t}</div>`;
-            if(t === "12:00") { row.innerHTML += `<div class="lift-slot lunch">🍴 점 심 시 간</div>`; }
-            else {
+            
+            if(t === "12:00") {
+                row.innerHTML += `<div class="lunch-row">🍴 점 심 시 간 (12:00 - 13:00)</div>`;
+            } else {
                 for(let i=1; i<=3; i++) {
-                    const id = t + '-' + i; const item = currentData[id];
-                    let cls = 'lift-slot', content = '';
+                    const id = t + '-' + i;
+                    const item = currentData[id];
+                    let cls = 'lift-slot';
+                    let content = '';
+                    
                     if(item) {
-                        cls += ' booked'; if(item.duration > 1) cls += ' extended'; if(item.isDone) cls += ' completed';
-                        content = `<div class="info-carNo">${item.isDone ? '✅ ' : ''}${item.carNo || ''}</div><div class="info-carModel">${item.carModel || ''}</div><div class="info-work">${item.work || ''}</div><div class="info-worker">${item.worker ? '🛠️ ' + item.worker : ''}</div>`;
+                        cls += ' booked';
+                        if(item.duration > 1) cls += ' extended';
+                        if(item.isDone) cls += ' completed';
+                        // 4단 정보 구성
+                        content = `
+                            <div class="info-carNo">${item.isDone ? '✅' : ''}${item.carNo || ''}</div>
+                            <div class="info-carModel">${item.carModel || ''}</div>
+                            <div class="info-work">${item.work || ''}</div>
+                            <div class="info-worker">${item.worker ? '🛠️ ' + item.worker : ''}</div>
+                        `;
                     }
                     row.innerHTML += `<div class="${cls}" onclick="openM('${id}')">${content}</div>`;
                 }
@@ -147,34 +223,66 @@
 
     let currentSlotId = null;
     function openM(id) {
-        currentSlotId = id; const item = currentData[id] || {carNo:'', carModel:'', phone:'', work:'', worker:'', duration:1, isDone:false};
-        document.getElementById('carNo').value = item.carNo; document.getElementById('carModel').value = item.carModel;
-        document.getElementById('work').value = item.work; document.getElementById('worker').value = item.worker;
-        document.getElementById('phone').value = item.phone || ''; document.getElementById('duration').value = item.duration;
-        document.getElementById('isDone').checked = item.isDone; document.getElementById('modal').style.display = 'flex';
+        currentSlotId = id;
+        const item = currentData[id] || {carNo:'', carModel:'', phone:'', work:'', worker:'', duration:1, isDone:false};
+        document.getElementById('carNo').value = item.carNo;
+        document.getElementById('carModel').value = item.carModel;
+        document.getElementById('work').value = item.work;
+        document.getElementById('worker').value = item.worker || '';
+        document.getElementById('phone').value = item.phone || '';
+        document.getElementById('duration').value = item.duration;
+        document.getElementById('isDone').checked = item.isDone;
+        document.getElementById('modal').style.display = 'flex';
     }
+
     function closeM() { document.getElementById('modal').style.display = 'none'; }
+
     function save() {
-        const carNo = document.getElementById('carNo').value, carModel = document.getElementById('carModel').value, phone = document.getElementById('phone').value, work = document.getElementById('work').value, worker = document.getElementById('worker').value, duration = parseInt(document.getElementById('duration').value), isDone = document.getElementById('isDone').checked;
-        const [st, lift] = currentSlotId.split('-'); const gId = currentData[currentSlotId] ? currentData[currentSlotId].gId : Date.now();
+        const carNo = document.getElementById('carNo').value;
+        const carModel = document.getElementById('carModel').value;
+        const work = document.getElementById('work').value;
+        const worker = document.getElementById('worker').value;
+        const phone = document.getElementById('phone').value;
+        const duration = parseInt(document.getElementById('duration').value);
+        const isDone = document.getElementById('isDone').checked;
+        
+        if(!carNo) { alert("차량번호를 입력해주세요."); return; }
+
+        const [st, lift] = currentSlotId.split('-');
+        const gId = currentData[currentSlotId] ? currentData[currentSlotId].gId : Date.now();
         const startIdx = times.indexOf(st);
+        
+        // 이전 기록 삭제 후 새로 반영
         for(let k in currentData) { if(currentData[k].gId === gId) delete currentData[k]; }
         for(let i=0; i<duration; i++) {
-            const idx = startIdx + i; if(idx >= times.length) break; const t = times[idx]; if(t === "12:00") continue;
-            currentData[t + '-' + lift] = { carNo, carModel, phone, work, worker, duration, gId, isDone };
+            const idx = startIdx + i;
+            if(idx >= times.length) break;
+            const t = times[idx];
+            if(t === "12:00") continue;
+            currentData[t + '-' + lift] = { carNo, carModel, work, worker, phone, duration, gId, isDone };
         }
-        saveData(); closeM();
+        saveData(); 
+        closeM();
     }
+
     function del() {
+        if(!confirm("이 예약을 삭제할까요?")) return;
         const item = currentData[currentSlotId];
-        if(item && item.gId) { for(let k in currentData) { if(currentData[k].gId === item.gId) delete currentData[k]; } }
-        else { delete currentData[currentSlotId]; }
-        saveData(); closeM();
+        if(item && item.gId) {
+            for(let k in currentData) { if(currentData[k].gId === item.gId) delete currentData[k]; }
+        } else { delete currentData[currentSlotId]; }
+        saveData(); 
+        closeM();
     }
+
     function changeDate(days) {
-        const d = new Date(document.getElementById('target-date').value); d.setDate(d.getDate() + days);
-        document.getElementById('target-date').value = d.toISOString().split('T')[0]; loadData();
+        const d = new Date(document.getElementById('target-date').value);
+        d.setDate(d.getDate() + days);
+        document.getElementById('target-date').value = d.toISOString().split('T')[0];
+        loadData();
     }
+
+    // 앱 시작!
     init();
 </script>
 </body>
