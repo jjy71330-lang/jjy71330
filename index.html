@@ -3,222 +3,112 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ACDelco서비스센터 예약대장</title>
+    <title>ACDelco 예약대장 (통합형)</title>
     <style>
-        body { font-family: 'Malgun Gothic', sans-serif; background-color: #f0f2f5; padding: 10px; margin: 0; }
+        body { font-family: 'Malgun Gothic', sans-serif; background: #f0f2f5; margin: 0; padding: 10px; }
         .container { max-width: 1050px; margin: 0 auto; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-        .main-header { text-align: center; color: #000; margin: 5px 0; border-bottom: 3px solid #000; padding-bottom: 5px; }
-        .main-header h1 { font-size: 26px; margin: 0; }
-
-        .setup-bar { background: #1e293b; color: white; padding: 8px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
-        .setup-bar input { padding: 4px; border-radius: 4px; border: none; width: 120px; text-align: center; font-weight: bold; font-size: 15px; background: #334155; color: white; }
-
-        .date-navigation { display: flex; justify-content: center; align-items: center; gap: 10px; margin-bottom: 10px; background: #eef2ff; padding: 8px; border-radius: 8px; }
-        .date-btn { background: #4f46e5; color: white; border: none; padding: 6px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; }
-        #target-date { font-size: 18px; font-weight: bold; padding: 5px; border: 1px solid #ddd; border-radius: 4px; }
-
-        .grid-header { display: grid; grid-template-columns: 75px 1fr 1fr 1fr; gap: 5px; font-weight: bold; text-align: center; border-bottom: 2px solid #333; padding: 10px 0; background: #eee; font-size: 16px; }
-        .time-row { display: grid; grid-template-columns: 75px 1fr 1fr 1fr; gap: 5px; padding: 3px 0; border-bottom: 1px solid #ddd; height: 105px; }
-        .time-label { display: flex; align-items: center; justify-content: center; font-weight: 900; background: #f8f9fa; border-radius: 4px; font-size: 16px; }
-        
-        .lift-slot { background: #fff; border: 1px solid #ccc; border-radius: 4px; padding: 6px 8px; cursor: pointer; overflow: hidden; display: flex; flex-direction: column; position: relative; justify-content: center; }
-        .lift-slot.booked { background-color: #0052cc !important; color: white !important; }
-        .lift-slot.extended { background-color: #e67e22 !important; color: white !important; }
-        .lift-slot.completed { background-color: #7f8c8d !important; color: #e0e0e0 !important; }
-        .lift-slot.lunch { background: #ffe3e3 !important; grid-column: span 3; display: flex; align-items: center; justify-content: center; color: #e03131; font-weight: bold; height: 45px; font-size: 18px; }
-        
-        .info-carNo { font-weight: 900; font-size: 18px; margin-bottom: 1px; line-height: 1.1; } 
-        .info-carModel { font-weight: bold; font-size: 14px; margin-bottom: 2px; opacity: 0.95; }
-        .info-work { font-size: 12px; margin-bottom: 2px; color: rgba(255,255,255,0.9); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } 
-        .info-worker { font-size: 13px; font-weight: 900; color: #ffeb3b; }
-
-        #modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); justify-content:center; align-items:center; z-index:100; }
-        .modal-content { background:white; padding:20px; border-radius:12px; width:340px; }
-        input, select { width:100%; padding:10px; margin-top: 5px; box-sizing:border-box; border: 1px solid #ddd; border-radius: 6px; }
-        .btn-group { display: flex; gap: 5px; margin-top: 15px; }
-        .btn-group button { flex: 1; padding: 12px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; color: white; }
+        .header { text-align: center; border-bottom: 3px solid #000; padding-bottom: 5px; margin-bottom: 10px; }
+        .setup-bar { background: #1e293b; color: white; padding: 10px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; font-size: 14px; }
+        .setup-bar input { background: #334155; color: white; border: none; padding: 5px; text-align: center; width: 80px; font-weight: bold; border-radius: 4px; }
+        .date-nav { text-align: center; margin-bottom: 10px; background: #eef2ff; padding: 10px; border-radius: 8px; }
+        #target-date { font-size: 20px; font-weight: bold; border: 1px solid #ddd; padding: 5px; }
+        .grid-h { display: grid; grid-template-columns: 80px 1fr 1fr 1fr; gap: 5px; background: #eee; padding: 10px 0; font-weight: bold; text-align: center; border-bottom: 2px solid #333; }
+        .time-row { display: grid; grid-template-columns: 80px 1fr 1fr 1fr; gap: 5px; border-bottom: 1px solid #ddd; height: 110px; padding: 5px 0; }
+        .time-label { display: flex; align-items: center; justify-content: center; font-weight: bold; background: #f8f9fa; }
+        .slot { background: #fff; border: 1px solid #ccc; border-radius: 6px; padding: 8px; cursor: pointer; display: flex; flex-direction: column; justify-content: center; text-align: center; }
+        .slot.booked { background: #0052cc !important; color: white !important; }
+        .info-carNo { font-weight: 900; font-size: 19px; }
+        .info-worker { font-size: 14px; font-weight: bold; color: #ffeb3b; }
+        #modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); justify-content:center; align-items:center; z-index:999; }
+        .modal-box { background:white; padding:25px; border-radius:15px; width:340px; }
+        input, select { width:100%; padding:10px; margin-top:5px; border:1px solid #ddd; border-radius:8px; box-sizing:border-box; }
     </style>
 </head>
 <body>
-
 <div class="container">
-    <div class="main-header"><h1>ACDelco서비스센터 예약대장</h1></div>
+    <div class="header"><h1>ACDelco 서비스센터 예약대장</h1></div>
     <div class="setup-bar">
-        <div>📡 <b>실시간 상태:</b> <span id="sync-status">연결 확인 중...</span></div>
-        <div>매장 코드: <input type="text" id="shop-id" placeholder="숫자 입력" onchange="loadData()"></div>
+        <div>📡 상태: <span id="sync-info">연결 확인 중...</span></div>
+        <div>매장 번호: <input type="text" id="shop-id" value="7133" onchange="load()"></div>
     </div>
-    <div class="date-navigation">
-        <button class="date-btn" onclick="changeDate(-1)">◀ 어제</button>
-        <input type="date" id="target-date" onchange="loadData()">
-        <button class="date-btn" onclick="changeDate(1)">내일 ▶</button>
+    <div class="date-nav">
+        <input type="date" id="target-date" onchange="load()">
     </div>
-    <div class="grid-header"><div>시간</div><div>리프트 1</div><div>리프트 2</div><div>리프트 3</div></div>
+    <div class="grid-h"><div>시간</div><div>리프트 1</div><div>리프트 2</div><div>리프트 3</div></div>
     <div id="timetable"></div>
 </div>
 
 <div id="modal">
-    <div class="modal-content">
-        <h3 style="margin:0 0 10px 0; text-align:center;">정비 예약 등록</h3>
-        <label style="font-size:12px; font-weight:bold;">차량번호</label><input type="text" id="carNo">
-        <label style="font-size:12px; font-weight:bold;">차종</label><input type="text" id="carModel">
-        <label style="font-size:12px; font-weight:bold;">수리사항</label><input type="text" id="work">
-        <label style="font-size:12px; font-weight:bold;">🛠️ 작업자</label><input type="text" id="worker">
-        <label style="font-size:12px; font-weight:bold;">📞 전화번호</label><input type="text" id="phone">
-        <div style="display:flex; gap:10px;">
-            <div style="flex:1;"><label style="font-size:12px;">소요시간</label>
-                <select id="duration"><option value="1">1시간</option><option value="2">2시간</option><option value="3">3시간</option><option value="4">4시간</option></select>
-            </div>
-            <div style="flex:1; display:flex; align-items:flex-end;">
-                <label style="cursor:pointer; display:flex; align-items:center; gap:5px; margin-bottom:12px; font-weight:bold;">
-                <input type="checkbox" id="isDone"> 완료</label>
-            </div>
-        </div>
-        <div class="btn-group">
-            <button style="background:#4f46e5;" onclick="save()">저장하기</button>
-            <button style="background:#dc3545;" onclick="del()">삭제하기</button>
-            <button style="background:#6c757d;" onclick="closeM()">닫기</button>
+    <div class="modal-box">
+        <h3 style="text-align:center; margin-top:0;">예약 등록</h3>
+        <label>차량번호</label><input type="text" id="carNo">
+        <label>차종</label><input type="text" id="carModel">
+        <label>수리사항</label><input type="text" id="work">
+        <label>작업자</label><input type="text" id="worker">
+        <label>시간(시간)</label><select id="dur"><option value="1">1시간</option><option value="2">2시간</option></select>
+        <div style="margin-top:15px; display:flex; gap:5px;">
+            <button onclick="save()" style="flex:1; padding:12px; background:#4f46e5; color:white; border:none; border-radius:8px;">저장</button>
+            <button onclick="closeM()" style="flex:1; padding:12px; background:#6c757d; color:white; border:none; border-radius:8px;">닫기</button>
         </div>
     </div>
 </div>
 
 <script>
     const times = ["09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00"];
-    let currentData = {};
-    let isSaving = false;
-    const SYNC_URL = "https://kvdb.io/A8v8bY6G7z5Lq9x4E3wR1t/acdelco_final_share_";
+    let db = {};
+    const BASE_URL = "https://kvdb.io/A8v8bY6G7z5Lq9x4E3wR1t/ac_final_7133_";
 
     function init() {
-        const sid = localStorage.getItem('my_shop_id') || '7133';
-        document.getElementById('shop-id').value = sid;
         document.getElementById('target-date').value = new Date().toISOString().split('T')[0];
-        
-        // 🚀 중요: 서버 기다리지 말고 일단 빈 칸부터 무조건 그립니다!
-        render(); 
-        
-        loadData();
-        setInterval(() => { if(!isSaving) loadData(); }, 10000); 
+        load();
+        setInterval(load, 10000); 
     }
 
-    async function loadData() {
-        if(isSaving) return;
-        const shopId = document.getElementById('shop-id').value;
+    async function load() {
         const date = document.getElementById('target-date').value;
-        if(!shopId) return;
-        
-        localStorage.setItem('my_shop_id', shopId);
+        const shop = document.getElementById('shop-id').value;
         try {
-            const res = await fetch(`${SYNC_URL}${shopId}_${date}?t=${Date.now()}`);
+            const res = await fetch(`${BASE_URL}${shop}_${date}?t=${Date.now()}`);
             if (res.ok) {
-                currentData = await res.json();
+                db = await res.json();
                 render();
-                document.getElementById('sync-status').innerText = "🟢 정상 연결됨";
-            } else {
-                document.getElementById('sync-status').innerText = "⚪ 새 장부 상태";
+                document.getElementById('sync-info').innerText = "🟢 실시간 연동됨";
             }
-        } catch (e) { document.getElementById('sync-status').innerText = "🔴 연결 지연 중..."; }
+        } catch (e) { document.getElementById('sync-info').innerText = "🟡 연결 확인 중..."; }
     }
 
-    async function saveData() {
-        isSaving = true;
-        const shopId = document.getElementById('shop-id').value;
+    async function save() {
         const date = document.getElementById('target-date').value;
-        render();
-        try {
-            await fetch(`${SYNC_URL}${shopId}_${date}`, { method: 'POST', body: JSON.stringify(currentData) });
-            document.getElementById('sync-status').innerText = "✅ 저장 완료";
-        } catch (e) { document.getElementById('sync-status').innerText = "⚠️ 저장 실패"; }
-        setTimeout(() => { isSaving = false; }, 2000);
+        const shop = document.getElementById('shop-id').value;
+        const carNo = document.getElementById('carNo').value;
+        if(!carNo) return alert("번호입력!");
+        db[curId] = { carNo, worker: document.getElementById('worker').value };
+        render(); closeM();
+        try { await fetch(`${BASE_URL}${shop}_${date}`, { method: 'POST', body: JSON.stringify(db) }); } catch(e) {}
     }
 
     function render() {
         const target = document.getElementById('timetable');
-        if(!target) return;
         target.innerHTML = '';
         times.forEach(t => {
-            const row = document.createElement('div');
-            row.className = 'time-row';
+            const row = document.createElement('div'); row.className = 'time-row';
             row.innerHTML = `<div class="time-label">${t}</div>`;
-            if(t === "12:00") {
-                row.innerHTML += `<div class="lift-slot lunch">🍴 점 심 시 간</div>`;
-            } else {
+            if(t === "12:00") { row.innerHTML += `<div style="grid-column: span 3; background:#fee2e2; color:#ef4444; display:flex; align-items:center; justify-content:center; font-weight:bold;">🍴 점 심 시 간</div>`; }
+            else {
                 for(let i=1; i<=3; i++) {
-                    const id = t + '-' + i;
-                    const item = currentData[id];
-                    let cls = 'lift-slot';
-                    let content = '';
-                    if(item) {
-                        cls += ' booked';
-                        if(item.duration > 1) cls += ' extended';
-                        if(item.isDone) cls += ' completed';
-                        content = `<div class="info-carNo">${item.isDone ? '✅ ' : ''}${item.carNo}</div>
-                                   <div class="info-carModel">${item.carModel}</div>
-                                   <div class="info-work">${item.work}</div>
-                                   <div class="info-worker">${item.worker ? '🛠️ ' + item.worker : ''}</div>`;
-                    }
-                    row.innerHTML += `<div class="${cls}" onclick="openM('${id}')">${content}</div>`;
+                    const id = t + '-' + i; const item = db[id];
+                    const div = document.createElement('div'); div.className = 'slot' + (item ? ' booked' : '');
+                    div.innerHTML = item ? `<div class="info-carNo">${item.carNo}</div><div class="info-worker">${item.worker}</div>` : '';
+                    div.onclick = () => openM(id); row.appendChild(div);
                 }
             }
             target.appendChild(row);
         });
     }
 
-    let currentSlotId = null;
-    function openM(id) {
-        currentSlotId = id;
-        const item = currentData[id] || {carNo:'', carModel:'', phone:'', work:'', worker:'', duration:1, isDone:false};
-        document.getElementById('carNo').value = item.carNo;
-        document.getElementById('carModel').value = item.carModel;
-        document.getElementById('work').value = item.work;
-        document.getElementById('worker').value = item.worker;
-        document.getElementById('phone').value = item.phone;
-        document.getElementById('duration').value = item.duration;
-        document.getElementById('isDone').checked = item.isDone;
-        document.getElementById('modal').style.display = 'flex';
-    }
-
+    let curId = null;
+    function openM(id) { curId = id; document.getElementById('modal').style.display = 'flex'; }
     function closeM() { document.getElementById('modal').style.display = 'none'; }
-
-    function save() {
-        const carNo = document.getElementById('carNo').value;
-        if(!carNo) return alert("차량번호를 입력하세요!");
-        const [st, lift] = currentSlotId.split('-');
-        const gId = currentData[currentSlotId] ? currentData[currentSlotId].gId : Date.now();
-        const startIdx = times.indexOf(st);
-        const duration = parseInt(document.getElementById('duration').value);
-
-        for(let k in currentData) { if(currentData[k].gId === gId) delete currentData[k]; }
-        for(let i=0; i<duration; i++) {
-            const idx = startIdx + i;
-            if(idx >= times.length) break;
-            const t = times[idx];
-            if(t === "12:00") continue;
-            currentData[t + '-' + lift] = {
-                carNo, gId, duration,
-                carModel: document.getElementById('carModel').value,
-                work: document.getElementById('work').value,
-                worker: document.getElementById('worker').value,
-                phone: document.getElementById('phone').value,
-                isDone: document.getElementById('isDone').checked
-            };
-        }
-        saveData(); closeM();
-    }
-
-    function del() {
-        if(!confirm("삭제할까요?")) return;
-        const item = currentData[currentSlotId];
-        if(item && item.gId) { for(let k in currentData) { if(currentData[k].gId === item.gId) delete currentData[k]; } }
-        else { delete currentData[currentSlotId]; }
-        saveData(); closeM();
-    }
-
-    function changeDate(days) {
-        const d = new Date(document.getElementById('target-date').value);
-        d.setDate(d.getDate() + days);
-        document.getElementById('target-date').value = d.toISOString().split('T')[0];
-        loadData();
-    }
-
     init();
 </script>
 </body>
