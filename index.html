@@ -3,62 +3,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ACDelco 7133 통합 장부</title>
+    <title>ACDelco 7133 통합 예약장</title>
     <style>
-        body { font-family: 'Malgun Gothic', sans-serif; background: #f0f2f5; margin: 0; padding: 10px; }
-        .container { max-width: 1050px; margin: 0 auto; background: white; padding: 15px; border-radius: 12px; border: 2px solid #333; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-        
-        /* 🚨 버튼이 있는 상단 바 */
-        .sync-bar { background: #1e293b; color: white; padding: 15px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        body { font-family: 'Malgun Gothic', sans-serif; background: #f1f5f9; margin: 0; padding: 10px; }
+        .container { max-width: 1050px; margin: 0 auto; background: white; padding: 15px; border-radius: 12px; border: 2px solid #334155; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+        .sync-bar { background: #1e293b; color: white; padding: 15px; border-radius: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
         #sync-status { font-weight: bold; color: #fbbf24; font-size: 16px; }
-        .refresh-btn { background: #22c55e; color: white; border: none; padding: 12px 25px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 16px; box-shadow: 0 4px 0 #16a34a; }
-        .refresh-btn:active { transform: translateY(2px); box-shadow: none; }
-
-        .date-nav { text-align: center; margin-bottom: 10px; }
-        #target-date { font-size: 22px; font-weight: bold; padding: 5px; border: 2px solid #333; border-radius: 5px; }
-
-        .grid-h { display: grid; grid-template-columns: 80px 1fr 1fr 1fr; gap: 5px; background: #eee; padding: 10px 0; font-weight: bold; text-align: center; border-bottom: 2px solid #333; }
-        .time-row { display: grid; grid-template-columns: 80px 1fr 1fr 1fr; gap: 5px; border-bottom: 1px solid #ddd; height: 110px; padding: 5px 0; }
-        .slot { background: #fff; border: 1px solid #ccc; border-radius: 6px; padding: 8px; cursor: pointer; display: flex; flex-direction: column; justify-content: center; text-align: center; }
-        .slot.booked { background: #0052cc !important; color: white !important; }
-        .slot.completed { background: #7f8c8d !important; color: #eee !important; }
-        .info-carNo { font-weight: 900; font-size: 19px; }
-        .info-worker { font-size: 14px; color: #ffeb3b; font-weight: bold; }
-
-        /* 입력창(모달) */
-        #modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); justify-content:center; align-items:center; z-index:9999; }
-        .modal-content { background:white; padding:25px; border-radius:15px; width:340px; }
-        input, select { width:100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
+        .refresh-btn { background: #22c55e; color: white; border: 2px solid #fff; padding: 10px 25px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; }
+        .date-nav { text-align: center; margin-bottom: 10px; padding: 10px; background: #e2e8f0; border-radius: 8px; }
+        #target-date { font-size: 22px; font-weight: bold; padding: 5px; cursor: pointer; }
+        .grid-h { display: grid; grid-template-columns: 80px 1fr 1fr 1fr; gap: 5px; background: #334155; color: white; padding: 10px 0; text-align: center; font-weight: bold; }
+        .time-row { display: grid; grid-template-columns: 80px 1fr 1fr 1fr; gap: 5px; border-bottom: 1px solid #cbd5e1; min-height: 115px; padding: 5px 0; }
+        .slot { background: white; border: 1px solid #cbd5e1; border-radius: 6px; cursor: pointer; display: flex; flex-direction: column; justify-content: center; text-align: center; padding: 5px; }
+        .slot.booked { background: #1d4ed8 !important; color: white !important; }
+        .slot.completed { background: #64748b !important; color: #f1f5f9 !important; }
+        .info-carNo { font-weight: 900; font-size: 20px; margin-bottom: 2px; }
+        .info-work { font-size: 13px; color: #fde047; font-weight: bold; }
+        #modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index: 9999; justify-content: center; align-items: center; }
+        .modal-box { background: white; padding: 25px; border-radius: 15px; width: 340px; }
+        label { display: block; margin-top: 10px; font-size: 13px; font-weight: bold; color: #334155; }
+        input, select { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
+        .btn-group { display: flex; gap: 8px; margin-top: 20px; }
+        .btn-group button { flex: 1; padding: 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; color: white; }
     </style>
 </head>
 <body>
 <div class="container">
-    <h2 style="text-align:center; margin:0 0 10px 0;">🚗 ACDelco 7133 통합 예약대장</h2>
+    <h2 style="text-align:center; margin: 0 0 15px 0;">🚗 ACDelco 7133 통합 예약대장</h2>
     <div class="sync-bar">
-        <div>📡 상태: <span id="sync-status">연결 확인 중...</span></div>
+        <div>📡 상태: <span id="sync-status">연결 시도 중...</span></div>
         <button class="refresh-btn" onclick="load()">🔄 지금 강제 연동 (새로고침)</button>
     </div>
     <div class="date-nav">
         <input type="date" id="target-date" onchange="load()">
-        <span style="margin-left:10px; font-weight:bold;">매장코드: 7133</span>
+        <span style="margin-left:15px; font-weight:bold;">매장코드: 7133</span>
     </div>
     <div class="grid-h"><div>시간</div><div>리프트 1</div><div>리프트 2</div><div>리프트 3</div></div>
     <div id="timetable"></div>
 </div>
 
 <div id="modal">
-    <div class="modal-content">
+    <div class="modal-box">
         <h3 style="text-align:center; margin:0;">정비 예약 등록</h3>
-        <label style="font-size:12px; font-weight:bold;">차량번호</label><input type="text" id="carNo">
-        <label style="font-size:12px; font-weight:bold;">차종</label><input type="text" id="carModel">
-        <label style="font-size:12px; font-weight:bold;">수리사항</label><input type="text" id="work">
-        <label style="font-size:12px; font-weight:bold;">🛠️ 작업자</label><input type="text" id="worker">
-        <label style="font-size:12px; font-weight:bold;">소요시간</label>
-        <select id="duration"><option value="1">1시간</option><option value="2">2시간</option><option value="3">3시간</option></select>
-        <div style="margin-top:10px;"><label><input type="checkbox" id="isDone"> 정비 완료</label></div>
-        <div style="display:flex; gap:5px; margin-top:15px;">
-            <button onclick="save()" style="flex:1; padding:15px; background:#0052cc; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">저장</button>
-            <button onclick="closeM()" style="flex:1; padding:15px; background:#6c757d; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">닫기</button>
+        <label>차량번호</label><input type="text" id="carNo" placeholder="예: 12가 3456">
+        <label>차종/수리내용</label><input type="text" id="work" placeholder="예: 알페온 / 오일교환">
+        <label>🛠️ 작업자</label><input type="text" id="worker" placeholder="정비사 이름">
+        <label>📞 전화번호</label><input type="text" id="phone" placeholder="010-0000-0000">
+        <label>소요시간</label>
+        <select id="duration"><option value="1">1시간</option><option value="2">2시간</option><option value="3">3시간</option><option value="4">4시간</option></select>
+        <div style="margin-top:15px;"><label style="display:flex; align-items:center; gap:10px; cursor:pointer;"><input type="checkbox" id="isDone" style="width:20px; height:20px;"> <b>정비 완료</b></label></div>
+        <div class="btn-group">
+            <button style="background:#1d4ed8;" onclick="save()">저장하기</button>
+            <button style="background:#ef4444;" onclick="del()">삭제</button>
+            <button style="background:#64748b;" onclick="closeM()">닫기</button>
         </div>
     </div>
 </div>
@@ -66,7 +63,8 @@
 <script>
     const times = ["09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00"];
     let db = {}; let curId = null;
-    const API = "https://kvdb.io/A8v8bY6G7z5Lq9x4E3wR1t/ac_7133_vfinal";
+    // 🚀 전 기기 공용 창고 주소 (바뀌지 않게 고정)
+    const API_URL = "https://kvdb.io/A8v8bY6G7z5Lq9x4E3wR1t/ac_7133_final_v100";
 
     function init() {
         document.getElementById('target-date').value = new Date().toISOString().split('T')[0];
@@ -78,28 +76,30 @@
         const date = document.getElementById('target-date').value;
         const status = document.getElementById('sync-status');
         try {
-            const res = await fetch(`${API}_${date}?t=${Date.now()}`);
+            const res = await fetch(`${API_URL}_${date}?t=${Date.now()}`);
             if (res.ok) {
                 db = await res.json(); render();
-                status.innerText = "🟢 연동됨 (" + new Date().toLocaleTimeString() + ")";
-            } else { status.innerText = "⚪ 연결됨 (데이터 없음)"; render(); }
-        } catch (e) { status.innerText = "🔴 연결 지연"; }
+                status.innerText = "🟢 연동 성공 (" + new Date().toLocaleTimeString() + ")";
+            } else { status.innerText = "⚪ 새 장부 연결됨"; render(); }
+        } catch (e) { status.innerText = "🔴 연결 대기 중..."; }
     }
 
     async function save() {
-        const carNo = document.getElementById('carNo').value; if(!carNo) return alert("번호 입력!");
-        const dur = parseInt(document.getElementById('duration').value); 
+        const carNo = document.getElementById('carNo').value; if(!carNo) return alert("차량번호를 입력하세요!");
+        const dur = parseInt(document.getElementById('duration').value);
         const [st, lift] = curId.split('-'); const sIdx = times.indexOf(st);
         const gId = Date.now();
         for(let i=0; i<dur; i++) {
             if(sIdx+i >= times.length) break;
             db[times[sIdx+i]+'-'+lift] = { 
-                carNo, worker: document.getElementById('worker').value, 
+                carNo, work: document.getElementById('work').value, 
+                worker: document.getElementById('worker').value,
+                phone: document.getElementById('phone').value,
                 isDone: document.getElementById('isDone').checked, gId 
             };
         }
         render(); closeM();
-        await fetch(`${API}_${document.getElementById('target-date').value}`, { method: 'POST', body: JSON.stringify(db) });
+        await fetch(`${API_URL}_${document.getElementById('target-date').value}`, { method: 'POST', body: JSON.stringify(db) });
     }
 
     function render() {
@@ -107,21 +107,28 @@
         times.forEach(tm => {
             const row = document.createElement('div'); row.className = 'time-row';
             row.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;font-weight:bold;background:#f8f9fa;">${tm}</div>`;
-            if(tm === "12:00") { row.innerHTML += `<div style="grid-column: span 3; background:#fee2e2; color:#ef4444; display:flex; align-items:center; justify-content:center; font-weight:bold;">🍴 점 심 시 간</div>`; }
+            if(tm === "12:00") { row.innerHTML += `<div style="grid-column: span 3; background:#fee2e2; color:#ef4444; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:18px;">🍴 점 심 시 간</div>`; }
             else {
                 for(let i=1; i<=3; i++) {
                     const id = tm + '-' + i; const item = db[id];
                     const div = document.createElement('div');
                     div.className = 'slot' + (item ? ' booked' : '') + (item?.isDone ? ' completed' : '');
-                    div.innerHTML = item ? `<div class="info-carNo">${item.carNo}</div><div class="info-worker">${item.worker}</div>` : '';
+                    div.innerHTML = item ? `<div class="info-carNo">${item.carNo}</div><div class="info-work">${item.worker || ''}</div>` : '';
                     div.onclick = () => openM(id); row.appendChild(div);
                 }
             }
             t.appendChild(row);
         });
     }
-    function openM(id) { curId = id; document.getElementById('modal').style.display = 'flex'; }
+    function openM(id) {
+        curId = id; const item = db[id] || {carNo:'', work:'', worker:'', phone:'', duration:1, isDone:false};
+        document.getElementById('carNo').value = item.carNo; document.getElementById('work').value = item.work;
+        document.getElementById('worker').value = item.worker; document.getElementById('phone').value = item.phone;
+        document.getElementById('isDone').checked = item.isDone;
+        document.getElementById('modal').style.display = 'flex';
+    }
     function closeM() { document.getElementById('modal').style.display = 'none'; }
+    function del() { if(confirm("삭제할까요?")) { delete db[curId]; save(); } }
     init();
 </script>
 </body>
