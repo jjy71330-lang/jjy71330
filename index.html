@@ -3,121 +3,101 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ACDelco 통합 예약대장</title>
+    <title>ACDelco 7133 통합 예약대장</title>
     <style>
         body { font-family: 'Malgun Gothic', sans-serif; background: #f1f5f9; margin: 0; padding: 10px; }
-        .container { max-width: 1000px; margin: 0 auto; background: white; padding: 15px; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
-        .header { text-align: center; border-bottom: 3px solid #1e293b; padding-bottom: 10px; margin-bottom: 10px; }
-        .sync-bar { background: #1e293b; color: white; padding: 15px; border-radius: 10px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
-        #sync-text { font-weight: bold; color: #fbbf24; font-size: 16px; }
-        .refresh-btn { background: #22c55e; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; }
-        
-        .date-nav { text-align: center; margin-bottom: 15px; }
-        #target-date { font-size: 20px; font-weight: bold; padding: 8px; border: 2px solid #1e293b; border-radius: 6px; }
-
-        .grid { display: grid; grid-template-columns: 80px 1fr 1fr 1fr; gap: 5px; background: #334155; padding: 5px; border-radius: 5px; }
-        .grid-h { color: white; text-align: center; font-weight: bold; padding: 10px 0; }
-        .time-label { background: #f8f9fa; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 18px; border-radius: 4px; height: 110px; }
-        .slot { background: white; border-radius: 4px; cursor: pointer; padding: 10px; display: flex; flex-direction: column; justify-content: center; text-align: center; border: 1px solid #cbd5e1; }
-        .slot.booked { background: #2563eb !important; color: white !important; }
-        .car-no { font-weight: 900; font-size: 20px; }
-        .worker { font-size: 14px; color: #fde047; font-weight: bold; margin-top: 5px; }
-
-        #modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; }
+        .container { max-width: 1000px; margin: 0 auto; background: white; padding: 15px; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); border: 2px solid #334155; }
+        .sync-bar { background: #334155; color: white; padding: 12px; border-radius: 10px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
+        #sync-status { font-weight: bold; font-size: 15px; color: #fbbf24; }
+        .grid { display: grid; grid-template-columns: 80px 1fr 1fr 1fr; gap: 4px; background: #cbd5e1; }
+        .time-label { background: #f1f5f9; display: flex; align-items: center; justify-content: center; font-weight: bold; height: 100px; }
+        .slot { background: white; cursor: pointer; display: flex; flex-direction: column; justify-content: center; text-align: center; min-height: 100px; }
+        .slot.booked { background: #1d4ed8 !important; color: white !important; }
+        .car-no { font-weight: 900; font-size: 19px; }
+        #modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index: 999; justify-content: center; align-items: center; }
         .modal-box { background: white; padding: 25px; border-radius: 15px; width: 320px; }
-        input { width: 100%; padding: 12px; margin: 8px 0; box-sizing: border-box; font-size: 17px; border: 1px solid #ccc; border-radius: 8px; }
-        .save-btn { width: 100%; padding: 15px; background: #2563eb; color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 18px; cursor: pointer; }
+        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; }
     </style>
 </head>
 <body>
 <div class="container">
-    <div class="header"><h1>ACDelco 통합 예약대장</h1></div>
+    <h2 style="text-align:center; margin: 5px 0 15px 0;">🚗 ACDelco 7133 예약대장</h2>
     <div class="sync-bar">
-        <div id="sync-text">📡 상태: 연결 중...</div>
-        <button class="refresh-btn" onclick="load()">🔄 지금 화면 새로고침</button>
+        <div id="sync-status">📡 상태: 연결 확인 중...</div>
+        <button onclick="load()" style="background:#22c55e; color:white; border:none; padding:8px 15px; border-radius:5px; cursor:pointer; font-weight:bold;">🔄 지금 새로고침</button>
     </div>
-    <div class="date-nav">
-        <input type="date" id="target-date" onchange="load()">
-        <span style="margin-left:10px;">매장코드: <b>7133</b></span>
+    <div style="text-align:center; margin-bottom:15px;">
+        <input type="date" id="target-date" onchange="load()" style="font-size:18px; font-weight:bold;">
+        <span style="margin-left:10px;">코드: <b>7133</b></span>
     </div>
-    <div class="grid">
-        <div class="grid-h">시간</div><div class="grid-h">리프트 1</div><div class="grid-h">리프트 2</div><div class="grid-h">리프트 3</div>
-        <div id="main-table" style="display: contents;"></div>
-    </div>
+    <div class="grid" id="main-grid"></div>
 </div>
 
 <div id="modal">
     <div class="modal-box">
-        <h3 style="text-align:center; margin:0;">예약 등록</h3>
+        <h3 style="text-align:center; margin-top:0;">예약 등록</h3>
         <input type="text" id="mCarNo" placeholder="차량번호">
-        <input type="text" id="mWorker" placeholder="작업자">
-        <button class="save-btn" onclick="save()">장부에 저장</button>
-        <button onclick="closeM()" style="width:100%; margin-top:10px; border:none; background:#eee; padding:10px; border-radius:8px;">닫기</button>
+        <input type="text" id="mWork" placeholder="작업내용">
+        <button onclick="save()" style="width:100%; padding:15px; background:#1d4ed8; color:white; border:none; border-radius:8px; font-weight:bold;">저장하기</button>
+        <button onclick="closeM()" style="width:100%; margin-top:8px; border:none; background:#eee; padding:10px; border-radius:8px;">닫기</button>
     </div>
 </div>
 
 <script>
     const times = ["09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00"];
     let db = {};
-    let currentId = "";
-    // 🚀 모든 컴퓨터와 폰이 똑같이 바라볼 창고 주소입니다.
-    const STORAGE_URL = "https://kvdb.io/A8v8bY6G7z5Lq9x4E3wR1t/ac_7133_final";
+    let curId = "";
+    const API = "https://kvdb.io/A8v8bY6G7z5Lq9x4E3wR1t/ac_7133_v1";
 
     function init() {
         document.getElementById('target-date').value = new Date().toISOString().split('T')[0];
         load();
-        setInterval(load, 10000); // 10초마다 자동 연동
+        setInterval(load, 10000); 
     }
 
     async function load() {
         const date = document.getElementById('target-date').value;
-        const status = document.getElementById('sync-text');
+        const status = document.getElementById('sync-status');
         try {
-            const res = await fetch(`${STORAGE_URL}_${date}?t=${Date.now()}`);
+            const res = await fetch(`${API}_${date}?t=${Date.now()}`);
             if (res.ok) {
                 db = await res.json();
                 render();
                 status.innerText = "🟢 실시간 연동됨 (" + new Date().toLocaleTimeString() + ")";
-            } else {
-                status.innerText = "⚪ 새 장부 작성 중...";
-            }
+            } else { status.innerText = "⚪ 연결됨 (새 장부)"; render(); }
         } catch (e) { status.innerText = "🔴 연결 확인 중..."; }
     }
 
     async function save() {
         const date = document.getElementById('target-date').value;
         const carNo = document.getElementById('mCarNo').value;
-        if(!carNo) return alert("차량번호를 입력하세요.");
-        
-        db[currentId] = { carNo, worker: document.getElementById('mWorker').value };
+        if(!carNo) return alert("번호 입력!");
+        db[curId] = { carNo, work: document.getElementById('mWork').value };
         render(); closeM();
-
-        try {
-            await fetch(`${STORAGE_URL}_${date}`, { method: 'POST', body: JSON.stringify(db) });
-            document.getElementById('sync-text').innerText = "✅ 저장 완료!";
-        } catch (e) { alert("서버 저장 실패! 인터넷을 확인하세요."); }
+        try { await fetch(`${API}_${date}`, { method: 'POST', body: JSON.stringify(db) }); } catch(e) {}
     }
 
     function render() {
-        const body = document.getElementById('main-table');
-        body.innerHTML = '';
+        const grid = document.getElementById('main-grid');
+        grid.innerHTML = '<div style="background:#475569; color:white; text-align:center; font-weight:bold; padding:8px;">시간</div>' +
+                         '<div style="background:#475569; color:white; text-align:center; font-weight:bold; padding:8px;">리프트 1</div>' +
+                         '<div style="background:#475569; color:white; text-align:center; font-weight:bold; padding:8px;">리프트 2</div>' +
+                         '<div style="background:#475569; color:white; text-align:center; font-weight:bold; padding:8px;">리프트 3</div>';
         times.forEach(t => {
-            body.innerHTML += `<div class="time-label">${t}</div>`;
+            grid.innerHTML += `<div class="time-label">${t}</div>`;
             if(t === "12:00") {
-                body.innerHTML += `<div style="grid-column: span 3; background:#fee2e2; color:#ef4444; display:flex; align-items:center; justify-content:center; font-weight:bold; height:110px;">🍴 점 심 시 간</div>`;
+                grid.innerHTML += `<div style="grid-column: span 3; background:#fee2e2; color:#ef4444; display:flex; align-items:center; justify-content:center; font-weight:bold;">🍴 점 심 시 간</div>`;
             } else {
                 for(let i=1; i<=3; i++) {
-                    const id = t + '-' + i;
-                    const item = db[id];
-                    body.innerHTML += `<div class="slot ${item ? 'booked' : ''}" onclick="openM('${id}')">
-                                        ${item ? `<div class="car-no">${item.carNo}</div><div class="worker">${item.worker}</div>` : ''}
+                    const id = t + '-' + i; const item = db[id];
+                    grid.innerHTML += `<div class="slot ${item ? 'booked' : ''}" onclick="openM('${id}')">
+                                        ${item ? `<div class="car-no">${item.carNo}</div><div style="font-size:12px;">${item.work}</div>` : ''}
                                        </div>`;
                 }
             }
         });
     }
-
-    function openM(id) { currentId = id; document.getElementById('modal').style.display = 'flex'; }
+    function openM(id) { curId = id; document.getElementById('modal').style.display = 'flex'; }
     function closeM() { document.getElementById('modal').style.display = 'none'; }
     init();
 </script>
