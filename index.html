@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ACDelco 7133 통합 예약장</title>
+    <title>ACDelco 7133 통합 예약대장</title>
     <style>
         body { font-family: 'Malgun Gothic', sans-serif; background: #f1f5f9; margin: 0; padding: 10px; }
         .container { max-width: 1050px; margin: 0 auto; background: white; padding: 15px; border-radius: 12px; border: 2px solid #334155; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
@@ -63,8 +63,7 @@
 <script>
     const times = ["09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00"];
     let db = {}; let curId = null;
-    // 🚀 전 기기 공용 창고 주소 (바뀌지 않게 고정)
-    const API_URL = "https://kvdb.io/A8v8bY6G7z5Lq9x4E3wR1t/ac_7133_final_v100";
+    const API_URL = "https://kvdb.io/A8v8bY6G7z5Lq9x4E3wR1t/ac_7133_final_v200";
 
     function init() {
         document.getElementById('target-date').value = new Date().toISOString().split('T')[0];
